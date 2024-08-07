@@ -1,6 +1,8 @@
 package templates
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Table wrapper definitions
 const table_open string = `<table id="query-result" class="min-w-full divide-y divide-gray-200">`
@@ -52,11 +54,7 @@ func generateRow(cols []string, data map[string]interface{}) string {
 	row := "<tr>"
 
 	for _, col := range cols {
-		str, ok := data[col].(string)
-		if !ok {
-			str = "NULL"
-		}
-		row += fmt.Sprintf(table_body_row, str)
+		row += fmt.Sprintf(table_body_row, data[col])
 	}
 
 	return row + "</tr>"
