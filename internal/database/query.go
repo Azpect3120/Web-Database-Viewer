@@ -30,6 +30,7 @@ func queryConnection(query, url string) ([]string, []map[string]interface{}, err
 	if err != nil {
 		return []string{}, []map[string]interface{}{}, err
 	}
+	defer db.Close()
 
 	rows, err := db.Query(query)
 	if err != nil {
