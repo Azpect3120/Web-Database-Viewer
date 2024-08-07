@@ -1,9 +1,13 @@
 package http
 
 import (
+	"encoding/gob"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,18 +26,28 @@ func New(port string) *Server {
 		Router: gin.Default(),
 		config: cors.DefaultConfig(),
 	}
-
 	server.config.AllowOrigins = []string{"*"}
 	server.Router.Use(cors.New(server.config))
+
+	// Session configuration
+	gob.Register([]byte{})
+	gob.Register(map[string]string{})
+	store := cookie.NewStore([]byte("secret"))
+	store.Options(sessions.Options{
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   86400 * 7, // 7 days
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	server.Router.Use(sessions.Sessions("mysession", store))
 
 	return server
 }
 
 // Setup the server with the necessary configurations
 func (s *Server) Setup() *Server {
-	// This has to be first ALWAYS for some stupid reason :|
-	s.initSession()
-
 	v1 := s.Router.Group("/v1")
 	web_g := v1.Group("/web")
 	api_g := v1.Group("/api")

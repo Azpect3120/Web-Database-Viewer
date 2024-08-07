@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-./tools/tailwind -i ./public/assets/styles/config.css -o ./public/assets/styles/main.css --minify
+./tools/tailwind -i ./web/static/styles/config.css -o ./web/static/styles/main.css --minify

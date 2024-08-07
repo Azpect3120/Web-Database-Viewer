@@ -1,9 +1,12 @@
 package http
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/Azpect3120/Web-Database-Viewer/internal/database"
+	"github.com/Azpect3120/Web-Database-Viewer/internal/templates"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -21,18 +24,48 @@ func populate(web, api *gin.RouterGroup) {
 		})
 	})
 
-	api.POST("/query", func(c *gin.Context) {
-		sql := c.PostForm("sql")
-		c.JSON(200, gin.H{"sql": sql})
-	})
+	api.POST("/query", database.QueryCurrent)
 
 	api.POST("/connections/test", database.TestConnectionURL)
 	api.POST("/connections", database.CreateConnection)
 	api.GET("/connections", func(c *gin.Context) {
 		session := sessions.Default(c)
-		connections, ok := session.Get("connections").(map[string]string)
+		connections_bytes, ok := session.Get("connections").([]byte)
+		if !ok {
+			c.JSON(200, gin.H{"connections": make(map[string]string), "current": "", "count": 0, "time": time.Now().String(), "status": 200})
+			return
+		}
+		current := session.Get("current")
 
-		c.JSON(200, gin.H{"okay": ok, "connections": connections})
+		var connections map[string]string
+		if err := json.Unmarshal(connections_bytes, &connections); err != nil {
+			fmt.Println(err)
+		}
 
+		c.JSON(200, gin.H{
+			"connections": connections,
+			"current":     current,
+			"count":       len(connections),
+			"time":        time.Now().String(),
+			"status":      200,
+		})
 	})
+	web.GET("/connections", func(c *gin.Context) {
+		session := sessions.Default(c)
+		connections_bytes, conn_ok := session.Get("connections").([]byte)
+		current, curr_ok := session.Get("current").(string)
+
+		var connections map[string]string
+		if conn_ok || curr_ok {
+			if err := json.Unmarshal(connections_bytes, &connections); err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			connections = make(map[string]string)
+		}
+
+		html := templates.ConnectionsList(connections, current)
+		c.String(200, html)
+	})
+	api.POST("/connections/connect", database.ChangeConnection)
 }
