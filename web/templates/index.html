@@ -33,78 +33,22 @@
       <div class="flex flex-col md:flex-row flex-grow">
         <!-- Sidebar -->
         <div class="w-full md:w-1/4 bg-white shadow-md">
-          <div class="p-4 border-b">
+          <div class="p-4 border-b flex justify-between items-center">
             <h2 class="text-lg font-bold"><span id="database-name-tree">database</span> Tables</h2>
+            <button
+              hx-get="/v1/web/connections/tree" 
+              hx-trigger="click"
+              hx-target="#database-table-tree"
+              class="hover:bg-gray-100 p-2 rounded-md"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="ionicon h-4 w-4" viewBox="0 0 512 512">
+                <path d="M400 148l-21.12-24.57A191.43 191.43 0 00240 64C134 64 48 150 48 256s86 192 192 192a192.09 192.09 0 00181.07-128" fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32"/>
+                <path d="M464 97.42V208a16 16 0 01-16 16H337.42c-14.26 0-21.4-17.23-11.32-27.31L436.69 86.1C446.77 76 464 83.16 464 97.42z"/>
+              </svg>
+            </button>
           </div>
-          <div class="p-4 max-h-full">
-            <ul class="space-y-2">
-              <li>
-                <button class="w-full text-left text-gray-700 font-medium hover:bg-gray-100 p-2 rounded flex items-center"
-                  title="Select this table">
-                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"></path>
-                  </svg>
-                  Table 1
-                </button>
-                <ul class="ml-6 mt-1 space-y-1 text-gray-600">
-                  <li>
-                    <button class="flex items-center" title="Select this field">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
-                        </path>
-                      </svg>
-                      <span>Column 1</span>
-                      <span class="h-1.5 w-1.5 bg-yellow-500 rounded-full mx-2" title="Primary Key"></span>
-                    </button>
-                  </li>
-                  <li>
-                    <button class="flex items-center" title="Select this field">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
-                        </path>
-                      </svg>
-                      <span>Column 2</span>
-                    </button>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <button class="w-full text-left text-gray-700 font-medium hover:bg-gray-100 p-2 rounded flex items-center"
-                  title="Select this table">
-                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"></path>
-                  </svg>
-                  Table 2
-                </button>
-                <ul class="ml-6 mt-1 space-y-1 text-gray-600">
-                  <li>
-                    <button class="flex items-center" title="Select this field">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
-                        </path>
-                      </svg>
-                      <span>Column A</span>
-                      <span class="h-1.5 w-1.5 bg-yellow-500 rounded-full mx-2" title="Primary Key"></span>
-                    </button>
-                  </li>
-                  <li>
-                    <button class="flex items-center" title="Select this field">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
-                        </path>
-                      </svg>
-                      <span>Column B</span>
-                    </button>
-                  </li>
-                </ul>
-              </li>
-            </ul>
+          <div class="p-4 max-h-full" hx-get="/v1/web/connections/tree" hx-trigger="load" hx-target="#database-table-tree">
+            <ul hx-swap-oob="outerHTML" id="database-table-tree" class="space-y-2"></ul>
           </div>
         </div>
 

@@ -9,10 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Change the current connection in the session
 func ChangeConnection(c *gin.Context) {
 	conn := c.PostForm("connected-database")
-
-	// Do something to change the connection
 
 	session := sessions.Default(c)
 	conn_bytes, ok := session.Get("connections").([]byte)
@@ -39,5 +38,5 @@ func ChangeConnection(c *gin.Context) {
 	session.Set("current", name)
 	session.Save()
 
-	c.String(200, templates.ConnectionsList(connections, name))
+	c.String(200, templates.ConnectionsList(connections, name)+TableTree(c))
 }

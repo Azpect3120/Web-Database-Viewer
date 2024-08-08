@@ -68,4 +68,8 @@ func populate(web, api *gin.RouterGroup) {
 		c.String(200, html)
 	})
 	api.POST("/connections/connect", database.ChangeConnection)
+
+	web.GET("/connections/tree", func(c *gin.Context) {
+		c.String(200, database.TableTree(c))
+	})
 }
