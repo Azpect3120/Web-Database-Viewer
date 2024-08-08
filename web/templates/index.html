@@ -34,7 +34,7 @@
         <!-- Sidebar -->
         <div class="w-full md:w-1/4 bg-white shadow-md">
           <div class="p-4 border-b">
-            <h2 class="text-lg font-bold"><em>Database 1</em> Tables</h2>
+            <h2 class="text-lg font-bold"><span id="database-name-tree">database</span> Tables</h2>
           </div>
           <div class="p-4 max-h-full">
             <ul class="space-y-2">
@@ -112,14 +112,7 @@
         <div class="w-full md:w-3/4 p-4">
           <main>
             <!-- Query Input -->
-            <form
-              class="mb-4"
-              hx-post="/v1/api/query"
-              hx-trigger="input delay:500ms"
-              hx-swap="outerHTML"
-              hx-target="#query-result"
-              hx-indicator="#spinner"
-            >
+            <form class="mb-4" hx-post="/v1/api/query" hx-trigger="input delay:500ms" hx-swap="outerHTML" hx-target="#query-result" hx-indicator="#spinner">
               <label for="sql" class="block text-sm font-medium text-gray-700">SQL Query</label>
               <textarea id="sql" name="sql" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
               <p id="spinner" class="text-gray-700 text-sm px-1 py-2 htmx-indicator"> Query running... </p>

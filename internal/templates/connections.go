@@ -2,9 +2,12 @@ package templates
 
 import "fmt"
 
+// List item templates
 const LIST_OPEN string = `<select id="connected-database" name="connected-database" class="mt-1 block p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base">`
 const LIST_ITEM string = `<option value="%s"%s>%s</option>`
 const LIST_CLOSE string = `</select>`
+
+const TREE_VIEW_NAME string = `<span hx-swap-oob="outerHTML" id="database-name-tree">%s</span>`
 
 // Generate a list of connections to display in the drop-down.
 // Current connection will be toggled as selected
@@ -24,6 +27,8 @@ func ConnectionsList(connections map[string]string, current string) string {
 		}
 	}
 
+	treeName := fmt.Sprintf(TREE_VIEW_NAME, current)
+
 	html += LIST_CLOSE
-	return html
+	return html + treeName
 }
