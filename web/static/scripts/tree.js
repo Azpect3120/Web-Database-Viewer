@@ -21,5 +21,5 @@ function ToggleFields(id) {
 function LoadTableQuery(table) {
   const sql = document.getElementById("sql")
   sql.value = `SELECT * FROM ${table};`;
-  sql.dispatchEvent(new Event('input', { bubbles: true }));
+  sql.dispatchEvent(new Event("input", { bubbles: true }));
 }
