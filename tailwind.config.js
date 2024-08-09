@@ -2,7 +2,8 @@
 module.exports = {
   content: [
     "./web/templates/*.html",
-    "./web/templates/**/*.html"
+    "./web/templates/**/*.html",
+    "./internal/templates/*.go"
   ],
   darkMode: "class",
   theme: {

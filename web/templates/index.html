@@ -22,7 +22,7 @@
         <div class="flex items-center justify-end space-x-4 flex-wrap">
           <form hx-post="/v1/api/connections/connect" hx-trigger="change" hx-swap="outerHTML" hx-target="#connected-database" hx-encoding="multipart/form-data" class="flex items-center justify-end space-x-2 flex-wrap">
             <label for="connected-database" class="block text-sm font-medium text-gray-700">Connected Database:</label>
-            <select hx-get="/v1/web/connections" hx-trigger="load" hx-swap="outerHTML" id="connected-database" name="connected-database" class="mt-1 block p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base"></select>
+            <select hx-get="/v1/web/connections" hx-trigger="load" hx-swap="outerHTML" id="connected-database" name="connected-database" hx-params="none" class="mt-1 block p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base"></select>
           </form>
           <button onclick="ShowModal();" class="bg-blue-500 text-white px-4 py-2 my-2 rounded-md text-sm md:text-base">
             Add Connection
@@ -47,7 +47,7 @@
               </svg>
             </button>
           </div>
-          <div class="p-4 max-h-full" hx-get="/v1/web/connections/tree" hx-trigger="load" hx-target="#database-table-tree">
+          <div class="p-4 max-h-full" hx-get="/v1/web/connections/tree" hx-trigger="load" hx-params="none" hx-target="#database-table-tree">
             <ul hx-swap-oob="outerHTML" id="database-table-tree" class="space-y-2"></ul>
           </div>
         </div>
@@ -174,8 +174,9 @@
     </div>
 
     <!-- Scripts -->
-    <script src="/v1/web/static/scripts/password.js"></script>
-    <script src="/v1/web/static/scripts/modal.js"></script>
+    <script defer src="/v1/web/static/scripts/password.js"></script>
+    <script defer src="/v1/web/static/scripts/modal.js"></script>
+    <script defer src="/v1/web/static/scripts/tree.js"></script>
   </body>
 
 </html>

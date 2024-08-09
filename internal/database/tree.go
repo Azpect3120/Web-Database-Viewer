@@ -34,8 +34,6 @@ func TableTree(c *gin.Context) string {
 		return ""
 	}
 
-	fmt.Printf("%+v\n", tree)
-
 	return templates.TableTree(tree)
 }
 
