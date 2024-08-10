@@ -17,9 +17,15 @@ function ToggleFields(id) {
   }
 }
 
-
 function LoadTableQuery(table) {
   const sql = document.getElementById("sql")
   sql.value = `SELECT * FROM ${table};`;
   sql.dispatchEvent(new Event("input", { bubbles: true }));
 }
+
+function LoadTableQueryWithFields(table, fields) {
+  const sql = document.getElementById("sql")
+  sql.value = `SELECT ${fields} FROM ${table};`;
+  sql.dispatchEvent(new Event("input", { bubbles: true }));
+}
+

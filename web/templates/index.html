@@ -20,7 +20,7 @@
           <p class="text-sm text-gray-600">Connect and query your databases effortlessly.</p>
         </div>
         <div class="flex items-center justify-end space-x-4 flex-wrap">
-          <form hx-post="/v1/api/connections/connect" hx-trigger="change" hx-swap="outerHTML" hx-target="#connected-database" hx-encoding="multipart/form-data" class="flex items-center justify-end space-x-2 flex-wrap">
+          <form hx-post="/v1/api/connections/connect" hx-trigger="change" hx-swap="outerHTML" hx-target="#connected-database" hx-indicator="#table-loading" hx-encoding="multipart/form-data" class="flex items-center justify-end space-x-2 flex-wrap">
             <label for="connected-database" class="block text-sm font-medium text-gray-700">Connected Database:</label>
             <select hx-get="/v1/web/connections" hx-trigger="load" hx-swap="outerHTML" id="connected-database" name="connected-database" hx-params="none" class="mt-1 block p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base"></select>
           </form>
@@ -34,12 +34,16 @@
         <!-- Sidebar -->
         <div class="w-full md:w-1/4 bg-white shadow-md">
           <div class="p-4 border-b flex justify-between items-center">
-            <h2 class="text-lg font-bold"><span id="database-name-tree">database</span> Tables</h2>
+            <h2 class="text-lg font-bold">
+              <span id="database-name-tree">database</span>
+              <span id="table-loading" class="text-sm font-normal mx-1 htmx-indicator duration-300">loading tables...</span>
+            </h2>
             <button
               hx-get="/v1/web/connections/tree" 
               hx-trigger="click"
               hx-target="#database-table-tree"
               class="hover:bg-gray-100 p-2 rounded-md"
+              hx-indicator="#table-loading"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="ionicon h-4 w-4" viewBox="0 0 512 512">
                 <path d="M400 148l-21.12-24.57A191.43 191.43 0 00240 64C134 64 48 150 48 256s86 192 192 192a192.09 192.09 0 00181.07-128" fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32"/>
@@ -47,7 +51,7 @@
               </svg>
             </button>
           </div>
-          <div class="p-4 max-h-full" hx-get="/v1/web/connections/tree" hx-trigger="load" hx-params="none" hx-target="#database-table-tree">
+          <div class="p-4 max-h-full" hx-get="/v1/web/connections/tree" hx-trigger="load" hx-params="none" hx-indicator="#table-loading" hx-target="#database-table-tree">
             <ul hx-swap-oob="outerHTML" id="database-table-tree" class="space-y-2"></ul>
           </div>
         </div>

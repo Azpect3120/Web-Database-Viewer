@@ -3,6 +3,8 @@ package templates
 import (
 	"fmt"
 	"sort"
+
+	"github.com/Azpect3120/Web-Database-Viewer/internal/model"
 )
 
 // Tree definition
@@ -28,13 +30,14 @@ const FIELDS_LIST_OPEN string = `<ul id="fields-%s" class="hidden ml-6 mt-1 spac
 const FIELDS_LIST_CLOSE string = `</ul>`
 const FIELD_TEMPLATE string = `
 	<li>
-		<button class="flex items-center" title="Select this field">
+		<button onclick="LoadTableQueryWithFields('%s', '%s')" class="flex items-center w-full" title="Select this field">
 			<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
 				xmlns="http://www.w3.org/2000/svg">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
 				</path>
 			</svg>
 			<span>%s</span>
+			<span class="text-xs ml-auto">%s</span>
 		</button>
 	</li>
 `
@@ -43,14 +46,14 @@ const FIELD_TEMPLATE string = `
 const PRIMARY_KEY string = `<span class="h-1.5 w-1.5 bg-yellow-500 rounded-full mx-2" title="Primary Key"></span>`
 
 // Generate the tree based on the database tables and columns
-func TableTree(tree map[string][]string) string {
+func TableTree(tree map[string][]model.Column) string {
 	html := TREE_OPEN
 
 	var body string
 	for _, table := range getSortedKeys(tree) {
 		body += fmt.Sprintf(TABLE_TEMPLATE, table, table, table, table, table)
 		fields := fmt.Sprintf(FIELDS_LIST_OPEN, table)
-		body += fields + generateFields(tree[table]) + FIELDS_LIST_CLOSE
+		body += fields + generateFields(table, tree[table]) + FIELDS_LIST_CLOSE
 	}
 
 	html += fmt.Sprintf(TREE_BODY_TEMPLATE, body)
@@ -58,16 +61,16 @@ func TableTree(tree map[string][]string) string {
 }
 
 // Using a list of fields, generate the HTML for the fields
-func generateFields(fields []string) string {
+func generateFields(table string, fields []model.Column) string {
 	var html string
 	for _, field := range fields {
-		html += fmt.Sprintf(FIELD_TEMPLATE, field)
+		html += fmt.Sprintf(FIELD_TEMPLATE, table, field.Name, field.Name, generateType(field))
 	}
 	return html
 }
 
 // Return a list of the keys in a map, sorted alphabetically
-func getSortedKeys(m map[string][]string) []string {
+func getSortedKeys(m map[string][]model.Column) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)
@@ -75,4 +78,31 @@ func getSortedKeys(m map[string][]string) []string {
 
 	sort.Strings(keys)
 	return keys
+}
+
+// Generate the string for the type of column base on the column definition
+func generateType(col model.Column) string {
+	var str string
+
+	if col.PrimaryKey {
+		str = `<span class="text-yellow-500">PK</span>, `
+	} else if col.ForeignKey.Column != "" {
+		str = fmt.Sprintf(`<span class="text-blue-500">FK: %s(%s)</span>, `, col.ForeignKey.ForeignTable, col.ForeignKey.ForeignColumn)
+	}
+
+	if col.Nullable == "NO" {
+		str += `<span class="text-red-500">R</span>, `
+	}
+
+	if col.Unique {
+		str += `<span class="text-green-500">U</span>, `
+	}
+
+	if col.MaxLength.Valid {
+		str += fmt.Sprintf("%s(%d)", col.Type, col.MaxLength.Int64)
+	} else {
+		str += col.Type
+	}
+
+	return str
 }
