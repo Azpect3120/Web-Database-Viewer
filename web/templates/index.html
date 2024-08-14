@@ -32,6 +32,9 @@
           <button onclick="ShowModal();" class="bg-blue-500 text-white px-4 py-2 my-2 rounded-md text-sm md:text-base">
             Add Connection
           </button>
+          <button hx-get="/v1/web/manager/open" hx-trigger="click" hx-target="#manager-modal" hx-swap="outerHTML" class="bg-blue-500 text-white px-4 py-2 my-2 rounded-md text-sm md:text-base">
+            Manage Connections
+          </button>
         </div>
       </div>
 
@@ -71,7 +74,7 @@
                 <div class="flex items-center space-x-6">
                   <form class="flex items-center space-x-2" hx-get="/v1/web/query/auto" hx-swap="outerHTML" hx-target="#query-main" hx-trigger="input">
                     <label for="auto-toggle" class="text-sm font-medium text-gray-700">Auto-Run</label>
-                    <input type="checkbox" name="toggle" class="toggle-checkbox" checked>
+                    <input type="checkbox" name="toggle" class="toggle-checkbox" title="Toggle auto-query functionality. Note: This will send whatever query is in the input and clear the box.">
                   </form>
 
                   <!-- Manual Query Button -->
@@ -198,6 +201,10 @@
         </div>
       </div>
     </div>
+
+    
+    <!-- Manage Connections Modal -->
+    <div id="manager-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden opacity-0"></div>
 
     <!-- Scripts -->
     <script defer src="/v1/web/static/scripts/password.js"></script>

@@ -50,6 +50,7 @@ func populate(web, api *gin.RouterGroup) {
 			"status":      200,
 		})
 	})
+	api.POST("/connections/delete", database.DeleteConnections)
 	web.GET("/connections", func(c *gin.Context) {
 		session := sessions.Default(c)
 		connections_bytes, conn_ok := session.Get("connections").([]byte)
@@ -73,7 +74,9 @@ func populate(web, api *gin.RouterGroup) {
 		c.String(200, database.TableTree(c))
 	})
 
-	// This should return an HTML template which will be used to auto or not
-	// auto send the query to the server.
 	web.GET("/query/auto", templates.ToggleQueryType)
+
+	web.GET("/manager/open", templates.OpenManager)
+	web.GET("/manager/hide", templates.HideManager)
+
 }

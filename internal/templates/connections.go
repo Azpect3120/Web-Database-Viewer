@@ -3,7 +3,7 @@ package templates
 import "fmt"
 
 // List item templates
-const LIST_OPEN string = `<select id="connected-database" name="connected-database" class="mt-1 block p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base">`
+const LIST_OPEN string = `<select id="connected-database" name="connected-database" class="mt-1 block p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base" title="Change the connection to query.">`
 const LIST_ITEM string = `<option value="%s"%s>%s</option>`
 const LIST_CLOSE string = `</select>`
 
