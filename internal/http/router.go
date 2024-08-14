@@ -72,4 +72,8 @@ func populate(web, api *gin.RouterGroup) {
 	web.GET("/connections/tree", func(c *gin.Context) {
 		c.String(200, database.TableTree(c))
 	})
+
+	// This should return an HTML template which will be used to auto or not
+	// auto send the query to the server.
+	web.GET("/query/auto", templates.ToggleQueryType)
 }

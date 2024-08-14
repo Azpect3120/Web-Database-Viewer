@@ -8,6 +8,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@2.0.1"></script>
     <link rel="icon" type="image/png" href="/v1/web/assets/favicon.ico">
+    <style>
+      .htmx-request {
+        display: block;
+      }
+    </style>
   </head>
 
   <body class="bg-gray-100">
@@ -60,12 +65,32 @@
         <div class="w-full md:w-3/4 p-4">
           <main>
             <!-- Query Input -->
-            <form class="mb-4" hx-post="/v1/api/query" hx-trigger="input delay:500ms" hx-swap="outerHTML" hx-target="#query-result" hx-indicator="#spinner">
-              <label for="sql" class="block text-sm font-medium text-gray-700">SQL Query</label>
-              <textarea id="sql" name="sql" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
-              <p id="spinner" class="text-gray-700 text-sm px-1 py-2 htmx-indicator"> Query running... </p>
+            <div id="query-main" class="mb-4">
+              <div class="flex items-center justify-between">
+                <label for="sql" class="block text-sm font-medium text-gray-700">SQL Query</label>
+                <div class="flex items-center space-x-6">
+                  <form class="flex items-center space-x-2" hx-get="/v1/web/query/auto" hx-swap="outerHTML" hx-target="#query-main" hx-trigger="input">
+                    <label for="auto-toggle" class="text-sm font-medium text-gray-700">Auto-Run</label>
+                    <input type="checkbox" name="toggle" class="toggle-checkbox" checked>
+                  </form>
+
+                  <!-- Manual Query Button -->
+                  <!-- <button hx-post="/v1/api/query" hx-trigger="click" hx-swap="outerHTML" hx-target="#query-result" hx-indicator="#spinner" hx-include="#sql" class="bg-blue-500 text-white py-2 px-3 rounded-md text-xs md:text-sm">Run Query</button> -->
+
+                  <!-- Auto Query Button -->
+                  <button class="bg-blue-500 text-white py-2 px-3 rounded-md text-xs md:text-sm opacity-60 cursor-default" title="Disable Auto-Run to use manual queries." disabled>Run Query</button>
+                </div>
+              </div>
+              
+              <!-- Manual Query Input -->
+              <!-- <textarea id="sql" name="sql" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea> -->
+
+              <!-- Auto Query Input -->
+              <textarea id="sql" name="sql" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" hx-post="/v1/api/query" hx-trigger="input delay:500ms" hx-swap="outerHTML" hx-target="#query-result" hx-indicator="#spinner"></textarea>
+
+              <p id="spinner" class="text-gray-700 text-sm px-1 py-2 htmx-indicator hidden"> Query running... </p>
               <p id="query-error" hx-swap-oob="outerHTML" class="text-red-500 py-2 text-sm hidden"></p>
-            </form>
+            </div>
 
             <!-- Query Results -->
             <div class="overflow-x-auto overflow-y-hidden bg-white shadow-md rounded-lg">
@@ -182,5 +207,4 @@
     <script defer src="/v1/web/static/scripts/modal.js"></script>
     <script defer src="/v1/web/static/scripts/tree.js"></script>
   </body>
-
 </html>
