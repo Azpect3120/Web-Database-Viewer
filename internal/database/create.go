@@ -17,6 +17,8 @@ func CreateConnection(c *gin.Context) {
 		name string = c.PostForm("db-conn-name")
 	)
 
+	fmt.Println(name, ": ", url)
+
 	session := sessions.Default(c)
 
 	var connections map[string]string

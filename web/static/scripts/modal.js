@@ -17,9 +17,10 @@ function HideModal() {
   modal.classList.add("hidden");
   modal.classList.add("opacity-0");
 
-  // Clear the inputs
   for (const key in input) {
-    input[key].value = "";
+    if (key != "driver") {
+      input[key].value = "";
+    }
   }
 }
 
@@ -75,6 +76,8 @@ for (const key in input) {
     input[key].addEventListener("input", () => {
       ParseURL(input);
     })
+  } else if (key == "name") {
+    continue;
   } else {
     // If the input changed is the database name, update the connection name as well.
     // This will create a default connection name based on the database name.
