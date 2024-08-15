@@ -13,8 +13,8 @@ import (
 // in the session.
 func CreateConnection(c *gin.Context) {
 	var (
-		url      string = c.PostForm("db-url")
-		database string = c.PostForm("db-database")
+		url  string = c.PostForm("db-url")
+		name string = c.PostForm("db-conn-name")
 	)
 
 	session := sessions.Default(c)
@@ -30,7 +30,7 @@ func CreateConnection(c *gin.Context) {
 		}
 	}
 
-	connections[database] = url
+	connections[name] = url
 
 	conn_bytes, err := json.Marshal(connections)
 	if err != nil {
@@ -38,9 +38,9 @@ func CreateConnection(c *gin.Context) {
 	}
 
 	session.Set("connections", []byte(conn_bytes))
-	session.Set("current", database)
+	session.Set("current", name)
 	session.Save()
 
-	html := templates.ConnectionsList(connections, database)
+	html := templates.ConnectionsList(connections, name)
 	c.String(200, html)
 }

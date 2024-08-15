@@ -16,6 +16,11 @@ function ShowModal() {
 function HideModal() {
   modal.classList.add("hidden");
   modal.classList.add("opacity-0");
+
+  // Clear the inputs
+  for (const key in input) {
+    input[key].value = "";
+  }
 }
 
 const input = {
@@ -25,6 +30,7 @@ const input = {
   username: document.getElementById("db-username"),
   password: document.getElementById("db-password"),
   database: document.getElementById("db-database"),
+  name: document.getElementById("db-conn-name"),
   connectionURL: document.getElementById("db-url")
 }
 
@@ -70,10 +76,17 @@ for (const key in input) {
       ParseURL(input);
     })
   } else {
-    input[key].addEventListener("input", () => {
-      GenerateURL(input);
-    })
+    // If the input changed is the database name, update the connection name as well.
+    // This will create a default connection name based on the database name.
+    if (key == "database") {
+      input[key].addEventListener("input", () => {
+        GenerateURL(input);
+        input.name.value = input[key].value;
+      })
+    } else {
+      input[key].addEventListener("input", () => {
+        GenerateURL(input);
+      })
+    }
   }
 }
-
-

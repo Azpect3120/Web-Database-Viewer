@@ -16,7 +16,7 @@ const MANAGER string = `
             <h2 class="text-xl font-bold">
               Manage Stored Connections
               <br>
-              <span class="text-xs font-light">Connection data is stored in the browsers session and can be deleted here.</span>
+              <span class="text-xs font-light">Connection data is stored in the browsers session and can be renamed or deleted here.</span>
             </h2>
             <button hx-get="/v1/web/manager/hide" hx-trigger="click" hx-swap="outerHTML" hx-target="#manager-modal" class="text-gray-500 hover:text-gray-700">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -51,16 +51,18 @@ const MANAGER string = `
 const MANAGER_ENTRY string = `
 	<tr class="overflow-x-auto">
 		<td class="px-6 py-4 whitespace-nowrap flex items-center justify-center">
-			<input type="checkbox" name="connections" value="%s" class="w-4 h-4">
+			<input type="checkbox" name="connections" value="%s" class="w-4 h-4 m-2">
 		</td>
-		<td class="px-6 py-4 whitespace-nowrap">%s</td>
+		<td class="px-6 py-4 whitespace-nowrap">
+			<input type="text" name="%s" value="%s" class="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+		</td>
 		<td class="px-6 py-4 whitespace-nowrap">%s</td>
 		<td class="px-6 py-4 whitespace-nowrap">%s</td>
 	</tr>
 `
 
 const MANAGER_CLOSED string = `
-	<div id="manager-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden opacity-0"></div>
+	<div id="manager-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden opacity-0" hx-get="/v1/web/connections" hx-trigger="load" hx-swap="outerHTML" hx-target="#connected-database" hx-params="none"></div>
 `
 
 func OpenManager(c *gin.Context) {
@@ -77,7 +79,7 @@ func OpenManager(c *gin.Context) {
 
 	var entries string
 	for name, url := range connections {
-		entries += fmt.Sprintf(MANAGER_ENTRY, url, name, "PostgreSQL", url)
+		entries += fmt.Sprintf(MANAGER_ENTRY, url, url, name, "PostgreSQL", url)
 	}
 
 	c.String(200, fmt.Sprintf(MANAGER, entries))

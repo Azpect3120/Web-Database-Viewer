@@ -11,6 +11,7 @@ import (
 
 func DeleteConnections(c *gin.Context) {
 	session := sessions.Default(c)
+	current, ok := session.Get("current").(string)
 	connections_bytes, ok := session.Get("connections").([]byte)
 	if !ok {
 		fmt.Println("No connections found")
@@ -26,6 +27,21 @@ func DeleteConnections(c *gin.Context) {
 			if conn == url {
 				delete(connections, name)
 			}
+		}
+	}
+
+	for name, url := range connections {
+		newName := c.PostForm(url)
+
+		if name == newName {
+			continue
+		}
+
+		delete(connections, name)
+		connections[newName] = url
+
+		if name == current {
+			session.Set("current", newName)
 		}
 	}
 
