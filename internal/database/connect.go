@@ -38,5 +38,5 @@ func ChangeConnection(c *gin.Context) {
 	session.Set("current", name)
 	session.Save()
 
-	c.String(200, templates.ConnectionsList(connections, name)+TableTree(c))
+	c.String(200, templates.ConnectionsList(connections, name)+TableTree(c)+EnumTree(c))
 }

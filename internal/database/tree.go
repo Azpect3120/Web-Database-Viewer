@@ -29,7 +29,7 @@ func TableTree(c *gin.Context) string {
 
 	url := connections[current]
 
-	tree, err := generateTree(url)
+	tree, err := generateTableTree(url)
 	if err != nil {
 		fmt.Println(err)
 		return ""
@@ -39,7 +39,7 @@ func TableTree(c *gin.Context) string {
 }
 
 // Generate the tree of the database tables
-func generateTree(url string) (map[string][]model.Column, error) {
+func generateTableTree(url string) (map[string][]model.Column, error) {
 	conn, err := sql.Open("postgres", url)
 	if err != nil {
 		return map[string][]model.Column{}, err
@@ -118,16 +118,22 @@ func fillColumns(conn *sql.DB, tree map[string][]model.Column) error {
 			fkeys = append(fkeys, fkey)
 		}
 
-		rows, err := conn.Query(fmt.Sprintf("SELECT column_name, is_nullable, data_type, character_maximum_length FROM information_schema.columns WHERE table_name = '%s';", table))
+		rows, err := conn.Query(fmt.Sprintf("SELECT c.column_name, c.is_nullable, c.data_type, c.character_maximum_length, t.typname AS enum_type FROM information_schema.columns c JOIN pg_type t ON c.udt_name = t.typname WHERE c.table_name = '%s';", table))
 		if err != nil {
 			return err
 		}
 		defer rows.Close()
 
 		for rows.Next() {
-			var column model.Column
-			if err := rows.Scan(&column.Name, &column.Nullable, &column.Type, &column.MaxLength); err != nil {
+			var (
+				column   model.Column
+				enumType string
+			)
+			if err := rows.Scan(&column.Name, &column.Nullable, &column.Type, &column.MaxLength, &enumType); err != nil {
 				return err
+			}
+			if column.Type == "USER-DEFINED" {
+				column.Type = enumType
 			}
 			if column.Name == pkey {
 				column.PrimaryKey = true
@@ -171,4 +177,70 @@ func getUniqueColumns(conn *sql.DB, table string) ([]string, error) {
 	}
 
 	return cols, nil
+}
+
+// Generate the tree of the database enums and their values
+func EnumTree(c *gin.Context) string {
+	session := sessions.Default(c)
+	connections_bytes, ok := session.Get("connections").([]byte)
+	current, ok := session.Get("current").(string)
+	if !ok {
+		fmt.Println("No connections found")
+		return ""
+	}
+
+	var connections map[string]string
+	if err := json.Unmarshal(connections_bytes, &connections); err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	url := connections[current]
+
+	enums, err := genereteEnumTree(url)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return templates.EnumTree(enums)
+}
+
+// Generate the tree of the database enums and their values from a
+// provided connection URL.
+func genereteEnumTree(url string) (map[string][]string, error) {
+	conn, err := sql.Open("postgres", url)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	enums, err := enumList(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	return enums, nil
+}
+
+// Get a list/map of all the enums in the database.
+// The key is the name of the enum and the value is a slice of the enum values.
+func enumList(conn *sql.DB) (map[string][]string, error) {
+	rows, err := conn.Query("SELECT t.typname AS enum_name, e.enumlabel AS enum_value FROM pg_type t JOIN pg_enum e ON t.oid = e.enumtypid JOIN pg_namespace n ON n.oid = t.typnamespace WHERE t.typcategory = 'E' AND n.nspname NOT IN ('pg_catalog', 'information_schema')  ORDER BY t.typname, e.enumsortorder;")
+	if err != nil {
+		return map[string][]string{}, err
+	}
+	defer rows.Close()
+
+	enums := make(map[string][]string)
+	for rows.Next() {
+		var enum, value string
+		if err := rows.Scan(&enum, &value); err != nil {
+			return map[string][]string{}, err
+		}
+
+		enums[enum] = append(enums[enum], value)
+	}
+
+	return enums, nil
 }

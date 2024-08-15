@@ -7,10 +7,10 @@ import (
 	"github.com/Azpect3120/Web-Database-Viewer/internal/model"
 )
 
-// Tree definition
-const TREE_OPEN string = `<ul hx-swap-oob="outerHTML" id="database-table-tree" class="space-y-2">`
-const TREE_CLOSE string = `</ul>`
-const TREE_BODY_TEMPLATE string = `<li>%s</li>`
+// Table tree definition
+const TABLE_TREE_OPEN string = `<ul hx-swap-oob="outerHTML" id="database-table-tree" class="space-y-2">`
+const TABLE_TREE_CLOSE string = `</ul>`
+const TABLE_TREE_BODY_TEMPLATE string = `<li>%s</li>`
 
 // Table definition
 const TABLE_TEMPLATE string = `
@@ -26,9 +26,9 @@ const TABLE_TEMPLATE string = `
 	`
 
 // Fields definition
-const FIELDS_LIST_OPEN string = `<ul id="fields-%s" class="hidden ml-6 mt-1 space-y-1 text-gray-600">`
-const FIELDS_LIST_CLOSE string = `</ul>`
-const FIELD_TEMPLATE string = `
+const TABLE_FIELDS_LIST_OPEN string = `<ul id="fields-%s" class="hidden ml-6 mt-1 space-y-1 text-gray-600">`
+const TABLE_FIELDS_LIST_CLOSE string = `</ul>`
+const TABLE_FIELD_TEMPLATE string = `
 	<li>
 		<button onclick="LoadTableQueryWithFields('%s', '%s')" class="flex items-center w-full" title="Select this field">
 			<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -42,35 +42,63 @@ const FIELD_TEMPLATE string = `
 	</li>
 `
 
-// This is not implemented yet
-const PRIMARY_KEY string = `<span class="h-1.5 w-1.5 bg-yellow-500 rounded-full mx-2" title="Primary Key"></span>`
+// Enum tree definition
+const ENUM_TREE_OPEN string = `<ul hx-swap-oob="outerHTML" id="database-enum-tree" class="space-y-2">`
+const ENUM_TREE_CLOSE string = `</ul>`
+const ENUM_TREE_BODY_TEMPLATE string = `<li>%s</li>`
+
+// Enum definition
+const ENUM_TEMPLATE string = `
+	<button class="w-full text-left text-gray-700 font-medium hover:bg-gray-100 p-2 rounded flex items-center">
+		<svg onclick="ToggleEnumValues('%s');" id="icon-enum-squeeze" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" transform="rotate(-90)">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"></path>
+		</svg>
+		<span class="hover:underline py-1" onclick="ToggleEnumValues('%s');">%s</span>
+	</button>
+`
+
+// Enum values definition
+const ENUM_VALUES_LIST_OPEN string = `<ul id="enum-values-%s" class="hidden ml-6 mt-1 space-y-1 text-gray-600">`
+const ENUM_VALUES_LIST_CLOSE string = `</ul>`
+const ENUM_VALUE_TEMPLATE string = `
+	<li>
+		<div class="flex items-center w-full py-2">
+			<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+				xmlns="http://www.w3.org/2000/svg">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
+				</path>
+			</svg>
+			<span>%s</span>
+		</div>
+	</li>
+`
 
 // Generate the tree based on the database tables and columns
 func TableTree(tree map[string][]model.Column) string {
-	html := TREE_OPEN
+	html := TABLE_TREE_OPEN
 
 	var body string
 	for _, table := range getSortedKeys(tree) {
 		body += fmt.Sprintf(TABLE_TEMPLATE, table, table, table, table, table)
-		fields := fmt.Sprintf(FIELDS_LIST_OPEN, table)
-		body += fields + generateFields(table, tree[table]) + FIELDS_LIST_CLOSE
+		fields := fmt.Sprintf(TABLE_FIELDS_LIST_OPEN, table)
+		body += fields + generateFields(table, tree[table]) + TABLE_FIELDS_LIST_CLOSE
 	}
 
-	html += fmt.Sprintf(TREE_BODY_TEMPLATE, body)
-	return html + TREE_CLOSE
+	html += fmt.Sprintf(TABLE_TREE_BODY_TEMPLATE, body)
+	return html + TABLE_TREE_CLOSE
 }
 
 // Using a list of fields, generate the HTML for the fields
 func generateFields(table string, fields []model.Column) string {
 	var html string
 	for _, field := range fields {
-		html += fmt.Sprintf(FIELD_TEMPLATE, table, field.Name, field.Name, generateType(field))
+		html += fmt.Sprintf(TABLE_FIELD_TEMPLATE, table, field.Name, field.Name, generateType(field))
 	}
 	return html
 }
 
 // Return a list of the keys in a map, sorted alphabetically
-func getSortedKeys(m map[string][]model.Column) []string {
+func getSortedKeys[T model.Column | string](m map[string][]T) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)
@@ -105,4 +133,29 @@ func generateType(col model.Column) string {
 	}
 
 	return str
+}
+
+// Generate the HTML string for the enum tree
+func EnumTree(enums map[string][]string) string {
+	html := ENUM_TREE_OPEN
+	var body string
+
+	for _, enum := range getSortedKeys(enums) {
+		body += fmt.Sprintf(ENUM_TEMPLATE, enum, enum, enum)
+		valuesList := fmt.Sprintf(ENUM_VALUES_LIST_OPEN, enum)
+		body += valuesList + generateEnumValues(enums[enum]) + ENUM_VALUES_LIST_CLOSE
+	}
+
+	html += fmt.Sprintf(ENUM_TREE_BODY_TEMPLATE, body)
+
+	return html + ENUM_TREE_CLOSE
+}
+
+// Convert a list of values into a list of HTML elements
+func generateEnumValues(values []string) string {
+	var html string
+	for _, value := range values {
+		html += fmt.Sprintf(ENUM_VALUE_TEMPLATE, value)
+	}
+	return html
 }

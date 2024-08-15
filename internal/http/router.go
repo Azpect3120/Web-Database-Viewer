@@ -70,8 +70,14 @@ func populate(web, api *gin.RouterGroup) {
 	})
 	api.POST("/connections/connect", database.ChangeConnection)
 
-	web.GET("/connections/tree", func(c *gin.Context) {
+	web.GET("/connections/tree/table", func(c *gin.Context) {
 		c.String(200, database.TableTree(c))
+	})
+	web.GET("/connections/tree/enum", func(c *gin.Context) {
+		c.String(200, database.EnumTree(c))
+	})
+	web.GET("/connections/tree", func(c *gin.Context) {
+		c.String(200, database.TableTree(c)+database.EnumTree(c))
 	})
 
 	web.GET("/query/auto", templates.ToggleQueryType)
