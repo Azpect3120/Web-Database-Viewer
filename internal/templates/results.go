@@ -4,8 +4,19 @@ import (
 	"fmt"
 )
 
+// Result list definition
+const result_list_open string = `<ul id="query-results">`
+const result_list_close string = `</ul>`
+
+// Result item definition
+const result_item string = `
+	<li class="overflow-x-auto overflow-y-hidden bg-white rounded-lg shadow-md mb-8">
+		%s
+	</li>
+`
+
 // Table wrapper definitions
-const table_open string = `<table id="query-result" class="min-w-full divide-y divide-gray-200">`
+const table_open string = `<table class="min-w-full divide-y divide-gray-200">`
 const table_close string = `</table>`
 
 // Header definitions
@@ -23,10 +34,20 @@ const query_error_message string = `<p id="query-error" hx-swap-oob="outerHTML" 
 const query_error_message_blank string = `<p id="query-error" hx-swap-oob="outerHTML" class="text-red-500 py-2 text-sm hidden"></p>`
 
 func ErrorQueryResults(e error) string {
-	return table_open + table_close + fmt.Sprintf(query_error_message, e.Error())
+	return result_list_open + result_list_close + fmt.Sprintf(query_error_message, e.Error())
 }
 
-func QueryResults(cols []string, rows []map[string]interface{}) string {
+func ConcatResults(items []string) string {
+	var html string = result_list_open
+
+	for _, h := range items {
+		html += h
+	}
+
+	return html + result_list_close
+}
+
+func QueryResult(cols []string, rows []map[string]interface{}) string {
 	head := generateHead(cols)
 
 	body := table_body_open
@@ -36,7 +57,7 @@ func QueryResults(cols []string, rows []map[string]interface{}) string {
 
 	body += table_body_close
 
-	return table_open + head + body + table_close + query_error_message_blank
+	return fmt.Sprintf(result_item, table_open+head+body+table_close+query_error_message_blank)
 }
 
 // Generate the tables head row

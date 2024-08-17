@@ -13,7 +13,7 @@ const MANUAL_QUERY string = `
 					<label for="auto-toggle" class="text-sm font-medium text-gray-700">Auto-Run</label>
 					<input type="checkbox" name="toggle" class="toggle-checkbox">
 				</form>
-				<button hx-post="/v1/api/query" hx-trigger="click" hx-swap="outerHTML" hx-target="#query-result" hx-indicator="#spinner" hx-include="#sql" class="bg-blue-500 text-white py-2 px-3 rounded-md text-xs md:text-sm">Run Query</button>
+				<button hx-post="/v1/api/query" hx-trigger="click" hx-swap="outerHTML" hx-target="#query-results" hx-indicator="#spinner" hx-include="#sql" class="bg-blue-500 text-white py-2 px-3 rounded-md text-xs md:text-sm">Run Query</button>
 			</div>
 		</div>
 		<textarea id="sql" name="sql" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
@@ -34,7 +34,7 @@ const AUTO_QUERY string = `
 				<button class="bg-blue-500 text-white py-2 px-3 rounded-md text-xs md:text-sm opacity-60 cursor-default" title="Disable Auto-Run to use manual queries." disabled>Run Query</button>
 			</div>
 		</div>
-		<textarea id="sql" name="sql" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" hx-post="/v1/api/query" hx-trigger="input delay:500ms" hx-swap="outerHTML" hx-target="#query-result" hx-indicator="#spinner"></textarea>
+		<textarea id="sql" name="sql" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" hx-post="/v1/api/query" hx-trigger="input delay:500ms" hx-swap="outerHTML" hx-target="#query-results" hx-indicator="#spinner"></textarea>
 		<p id="spinner" class="text-gray-700 text-sm px-1 py-2 htmx-indicator hidden"> Query running... </p>
 		<p id="query-error" hx-swap-oob="outerHTML" class="text-red-500 py-2 text-sm hidden"></p>
 	</div>

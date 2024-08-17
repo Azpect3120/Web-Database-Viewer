@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/Azpect3120/Web-Database-Viewer/internal/templates"
 	"github.com/gin-contrib/sessions"
@@ -16,13 +17,19 @@ func QueryCurrent(c *gin.Context) {
 	query := c.PostForm("sql")
 	conn := getConnection(c)
 
-	cols, data, err := queryConnection(query, conn)
-	if err != nil {
-		c.String(200, templates.ErrorQueryResults(err))
-		return
+	queries := strings.Split(query, ";")
+	var results []string
+	for _, query := range queries {
+		cols, data, err := queryConnection(query, conn)
+		if err != nil {
+			c.String(200, templates.ErrorQueryResults(err))
+			return
+		}
+
+		results = append(results, templates.QueryResult(cols, data))
 	}
 
-	c.String(200, templates.QueryResults(cols, data))
+	c.String(200, templates.ConcatResults(results))
 }
 
 func queryConnection(query, url string) ([]string, []map[string]interface{}, error) {
