@@ -17,20 +17,22 @@ func QueryCurrent(c *gin.Context) {
 	query := c.PostForm("sql")
 	conn := getConnection(c)
 
+	if query == "" {
+		c.String(200, templates.ErrorQueryResults(fmt.Errorf("No query provided")))
+		return
+	}
+
 	queries := strings.Split(query, ";")
 	var results []string
 	for _, query := range queries {
 		cols, data, err := queryConnection(query, conn)
 		if err != nil {
-			fmt.Println(err)
 			c.String(200, templates.ErrorQueryResults(err))
 			return
 		}
 
 		results = append(results, templates.QueryResult(cols, data))
 	}
-
-	fmt.Printf("%v\n", results)
 
 	c.String(200, templates.ConcatResults(results))
 }
