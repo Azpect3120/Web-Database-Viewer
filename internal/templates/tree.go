@@ -18,7 +18,7 @@ const TABLE_TEMPLATE string = `
 		<svg onclick="ToggleFields('%s');" id="icon-%s" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" transform="rotate(-90)">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"></path>
 		</svg>
-		<span class="hover:underline" title="Select this table" onclick="ToggleFields('%s');">%s</span>
+		<span class="hover:underline w-full" title="Select this table" onclick="ToggleFields('%s');">%s</span>
 		<svg class="w-8 h-8 ml-auto p-2 rounded-full hover:bg-gray-300 transition:all duration-150" xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512" onclick="LoadTableQuery('%s');">
 			<path d="M464 428L339.92 303.9a160.48 160.48 0 0030.72-94.58C370.64 120.37 298.27 48 209.32 48S48 120.37 48 209.32s72.37 161.32 161.32 161.32a160.48 160.48 0 0094.58-30.72L428 464zM209.32 319.69a110.38 110.38 0 11110.37-110.37 110.5 110.5 0 01-110.37 110.37z"/>
 		</svg>
@@ -53,7 +53,7 @@ const ENUM_TEMPLATE string = `
 		<svg onclick="ToggleEnumValues('%s');" id="icon-enum-squeeze" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" transform="rotate(-90)">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"></path>
 		</svg>
-		<span class="hover:underline py-1" onclick="ToggleEnumValues('%s');">%s</span>
+		<span class="hover:underline py-1 w-full" onclick="ToggleEnumValues('%s');">%s</span>
 	</button>
 `
 
