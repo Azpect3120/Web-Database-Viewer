@@ -19,11 +19,12 @@ func ConnectionsList(connections map[string]string, current string) string {
 		return html + LIST_CLOSE
 	}
 
-	for name, url := range connections {
+	html += fmt.Sprintf(LIST_ITEM, connections[current], " selected", current)
+	for _, name := range getSortedKeys(connections) {
 		if name == current {
-			html += fmt.Sprintf(LIST_ITEM, url, " selected", name)
+			continue
 		} else {
-			html += fmt.Sprintf(LIST_ITEM, url, "", name)
+			html += fmt.Sprintf(LIST_ITEM, connections[name], "", name)
 		}
 	}
 
