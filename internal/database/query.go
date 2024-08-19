@@ -22,12 +22,15 @@ func QueryCurrent(c *gin.Context) {
 	for _, query := range queries {
 		cols, data, err := queryConnection(query, conn)
 		if err != nil {
+			fmt.Println(err)
 			c.String(200, templates.ErrorQueryResults(err))
 			return
 		}
 
 		results = append(results, templates.QueryResult(cols, data))
 	}
+
+	fmt.Printf("%v\n", results)
 
 	c.String(200, templates.ConcatResults(results))
 }
