@@ -10,12 +10,13 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 
 func QueryCurrent(c *gin.Context) {
 	query := c.PostForm("sql")
-	conn := getConnection(c)
+	conn, driver := getConnection(c)
 
 	if query == "" {
 		c.String(200, templates.ErrorQueryResults(fmt.Errorf("No query provided")))
@@ -25,7 +26,12 @@ func QueryCurrent(c *gin.Context) {
 	queries := strings.Split(query, ";")
 	var results []string
 	for _, query := range queries {
-		cols, data, err := queryConnection(query, conn)
+		// Some goofy skill issue with MySQL
+		// This is REQUIRED to prevent errors from the split
+		if query == "" {
+			continue
+		}
+		cols, data, err := queryConnection(query, conn, driver)
 		if err != nil {
 			c.String(200, templates.ErrorQueryResults(err))
 			return
@@ -37,8 +43,8 @@ func QueryCurrent(c *gin.Context) {
 	c.String(200, templates.ConcatResults(results))
 }
 
-func queryConnection(query, url string) ([]string, []map[string]interface{}, error) {
-	db, err := sql.Open("postgres", url)
+func queryConnection(query, url, driver string) ([]string, []map[string]interface{}, error) {
+	db, err := sql.Open(driver, url)
 	if err != nil {
 		return []string{}, []map[string]interface{}{}, err
 	}
@@ -106,20 +112,20 @@ func queryConnection(query, url string) ([]string, []map[string]interface{}, err
 	return cols, result, nil
 }
 
-func getConnection(c *gin.Context) (url string) {
+func getConnection(c *gin.Context) (url, driver string) {
 	session := sessions.Default(c)
 	conn_bytes, ok := session.Get("connections").([]byte)
 	curr, ok := session.Get("current").(string)
 	if !ok {
 		fmt.Println("No current connection")
-		return ""
+		return "", ""
 	}
 
-	var connections map[string]string
+	var connections map[string][2]string
 	if err := json.Unmarshal(conn_bytes, &connections); err != nil {
 		fmt.Println(err)
-		return ""
+		return "", ""
 	}
 
-	return connections[curr]
+	return connections[curr][0], connections[curr][1]
 }

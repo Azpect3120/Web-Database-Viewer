@@ -35,31 +35,56 @@ const input = {
   connectionURL: document.getElementById("db-url")
 }
 
-// State for hiding the password in the connection URL
-// let hidden = true;
-// const togglePassword = () => {
-//   hidden = !hidden;
-//   GenerateURL(input);
-// }
-
 function GenerateURL(data) {
-  // let password = hidden ? "●".repeat(data.password.value.length) : data.password.value;
-  data.connectionURL.value = `${data.driver.value}://${data.username.value || "<username>"}:${data.password.value || "<password>"}@${data.host.value || "<host>"}:${data.port.value || "<port>"}/${data.database.value || "<database>"}?sslmode=disable`;
+  const driver = data.driver.value;
+  if (driver == "postgres") {
+    data.connectionURL.value = `postgres://${data.username.value || "<username>"}:${data.password.value || "<password>"}@${data.host.value || "<host>"}:${data.port.value || "<port>"}/${data.database.value || "<database>"}?sslmode=disable`;
+  } else if (driver == "mysql" || driver == "mariadb") {
+    data.connectionURL.value = `${data.username.value || "<username>"}:${data.password.value || "<password>"}@tcp(${data.host.value || "<host>"}:${data.port.value || "<port>"})/${data.database.value || "<database>"}`;
+  }
 }
 
 function ParseURL (data) {
-  const regex = /^(?<protocol>[a-z]+):\/\/(?<username>[^:]+):(?<password>[^@]+)@(?<host>[^:]+):(?<port>[0-9]+)\/(?<database>[^\?]+)(\?(?<params>.*))?$/;
+  let regex;
+  switch (data.driver.value) {
+    case "postgres":
+      regex = /^(?<protocol>[a-z]+):\/\/(?<username>[^:]+):(?<password>[^@]+)@(?<host>[^:]+):(?<port>[0-9]+)\/(?<database>[^\?]+)(\?(?<params>.*))?$/;
+      break;
+    case "mysql":
+    case "mariadb":
+      regex = /^(?<username>[^:]+):(?<password>[^@]+)@tcp\((?<host>[^:]+):(?<port>[0-9]+)\)\/(?<database>[^\?]+)(\?(?<params>.*))?$/;
+      break;
+    default: 
+      console.log("Parsing URL failed: Unsupported driver.")
+      return;
+  }
+
   const match = data.connectionURL.value.match(regex);
-
   if (match) {
-    const { protocol, username, password, host, port, database } = match.groups;
+    switch (data.driver.value) {
+      case "postgres":
+        var { protocol, username, password, host, port, database } = match.groups;
+        data.host.value = host;
+        data.port.value = port;
+        data.password.value = password;
+        data.username.value = username;
+        data.driver.value = protocol;
+        data.database.value = database;
+        break;
+      case "mysql":
+      case "mariadb":
+        var { username, password, host, port, database } = match.groups;
+        data.host.value = host;
+        data.port.value = port;
+        data.password.value = password;
+        data.username.value = username;
+        data.database.value = database;
+        break;
+      default:
+        console.log("Parsing URL failed: Unsupported driver.")
+        break;
+    }
 
-    data.host.value = host;
-    data.port.value = port;
-    data.password.value = password;
-    data.username.value = username;
-    data.driver.value = protocol;
-    data.database.value = database;
     
     data.connectionURL.classList.remove("text-red-500");
     document.getElementById("db-url-invalid").classList.add("hidden");

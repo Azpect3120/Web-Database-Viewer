@@ -72,14 +72,14 @@ func OpenManager(c *gin.Context) {
 		fmt.Println("No connections found")
 	}
 
-	var connections map[string]string
+	var connections map[string][2]string
 	if err := json.Unmarshal(connections_bytes, &connections); err != nil {
 		fmt.Println(err)
 	}
 
 	var entries string
-	for name, url := range connections {
-		entries += fmt.Sprintf(MANAGER_ENTRY, url, url, name, "PostgreSQL", url)
+	for name, conn := range connections {
+		entries += fmt.Sprintf(MANAGER_ENTRY, conn[0], conn[0], name, conn[1], conn[0])
 	}
 
 	c.String(200, fmt.Sprintf(MANAGER, entries))

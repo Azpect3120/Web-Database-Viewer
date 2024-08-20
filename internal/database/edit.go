@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DeleteConnections(c *gin.Context) {
+func EditConnections(c *gin.Context) {
 	session := sessions.Default(c)
 	current, ok := session.Get("current").(string)
 	connections_bytes, ok := session.Get("connections").([]byte)
@@ -17,28 +17,28 @@ func DeleteConnections(c *gin.Context) {
 		fmt.Println("No connections found")
 	}
 
-	var connections map[string]string
+	var connections map[string][2]string
 	if err := json.Unmarshal(connections_bytes, &connections); err != nil {
 		fmt.Println(err)
 	}
 
 	for _, conn := range c.PostFormArray("connections") {
-		for name, url := range connections {
-			if conn == url {
+		for name, data := range connections {
+			if conn == data[0] {
 				delete(connections, name)
 			}
 		}
 	}
 
-	for name, url := range connections {
-		newName := c.PostForm(url)
+	for name, data := range connections {
+		newName := c.PostForm(data[0])
 
 		if name == newName {
 			continue
 		}
 
 		delete(connections, name)
-		connections[newName] = url
+		connections[newName] = [2]string{data[0], data[1]}
 
 		if name == current {
 			session.Set("current", newName)

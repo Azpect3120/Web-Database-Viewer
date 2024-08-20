@@ -20,13 +20,9 @@
           <p class="text-sm text-gray-600">Connect and query your databases effortlessly.</p>
         </div>
         <div class="flex items-center justify-end space-x-4 flex-wrap">
-          <form hx-post="/v1/api/connections/connect" hx-trigger="change" hx-swap="outerHTML"
-            hx-target="#connected-database" hx-indicator="#table-loading" hx-encoding="multipart/form-data"
-            class="flex items-center justify-end space-x-2 flex-wrap">
+          <form hx-post="/v1/api/connections/connect" hx-trigger="change" hx-swap="outerHTML" hx-target="#connected-database" hx-indicator="#table-loading" hx-encoding="multipart/form-data" class="flex items-center justify-end space-x-2 flex-wrap">
             <label for="connected-database" class="block text-sm font-medium text-gray-700">Connected Database:</label>
-            <select hx-get="/v1/web/connections" hx-trigger="load, change" hx-swap="outerHTML" id="connected-database"
-              name="connected-database" hx-params="none"
-              class="mt-1 block p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base"></select>
+            <select hx-get="/v1/web/connections" hx-trigger="load, change" hx-swap="outerHTML" id="connected-database" name="connected-database" hx-params="none" class="mt-1 block p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base"></select>
           </form>
           <button onclick="ShowModal();" class="bg-blue-500 text-white px-4 py-2 my-2 rounded-md text-sm md:text-base">
             Add Connection
@@ -197,9 +193,8 @@
               </div>
               <div>
                 <label for="db-driver" class="block text-sm font-medium text-gray-700">Driver/Type of Database</label>
-                <select id="db-driver" name="db-driver"
-                  class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                  <option value="postgresql">PostgreSQL</option>
+                <select id="db-driver" name="db-driver" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                  <option value="postgres">PostgreSQL</option>
                   <option value="mysql">MySQL</option>
                   <option value="sqlite">SQLite</option>
                   <option value="sqlserver">SQL Server</option>

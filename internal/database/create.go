@@ -10,29 +10,51 @@ import (
 )
 
 // Create a new connection to a database and store the details
-// in the session.
+// in the session. The connections are stored as follows:
+//
+//	{
+//	  "connections": {
+//	    "connection-name": ["url", "driver"]
+//	  },
+//	  "current": "connection-name"
+//	}
 func CreateConnection(c *gin.Context) {
 	var (
-		url  string = c.PostForm("db-url")
-		name string = c.PostForm("db-conn-name")
+		url    string = c.PostForm("db-url")
+		name   string = c.PostForm("db-conn-name")
+		driver string = c.PostForm("db-driver")
 	)
 
-	fmt.Println(name, ": ", url)
-
 	session := sessions.Default(c)
-
-	var connections map[string]string
+	var connections map[string][2]string
 
 	session_bytes, ok := session.Get("connections").([]byte)
 	if !ok {
-		connections = make(map[string]string)
+		connections = make(map[string][2]string)
 	} else {
 		if err := json.Unmarshal(session_bytes, &connections); err != nil {
 			fmt.Println(err)
 		}
 	}
 
-	connections[name] = url
+	// This is stupid as shit, but prevents a duplicate name from being
+	// created.
+	for true {
+		var dupe bool = false
+		for n := range connections {
+			fmt.Printf("is %s == %s\n", n, name)
+			if n == name {
+				name = fmt.Sprintf("%s (copy)", name)
+				dupe = true
+				break
+			}
+		}
+		if !dupe {
+			break
+		}
+	}
+
+	connections[name] = [2]string{url, driver}
 
 	conn_bytes, err := json.Marshal(connections)
 	if err != nil {

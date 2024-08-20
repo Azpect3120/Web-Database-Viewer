@@ -3,55 +3,61 @@ package database
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/Azpect3120/Web-Database-Viewer/internal/model"
+	"github.com/Azpect3120/Web-Database-Viewer/internal/query"
 	"github.com/Azpect3120/Web-Database-Viewer/internal/templates"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
 
+// Return an HTML string with the contents of the database tables
+// in tree format
 func TableTree(c *gin.Context) string {
 	session := sessions.Default(c)
 	connections_bytes, ok := session.Get("connections").([]byte)
 	current, ok := session.Get("current").(string)
 	if !ok {
-		fmt.Println("No connections found")
-		return ""
+		return templates.TableTreeError(errors.New("No connections found"))
 	}
 
-	var connections map[string]string
+	var connections map[string][2]string
 	if err := json.Unmarshal(connections_bytes, &connections); err != nil {
 		fmt.Println(err)
-		return ""
+		return templates.TableTreeError(err)
 	}
 
-	url := connections[current]
+	var (
+		url    string = connections[current][0]
+		driver string = connections[current][1]
+	)
 
-	tree, err := generateTableTree(url)
+	tree, err := generateTableTree(url, driver)
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		return templates.TableTreeError(err)
 	}
 
 	return templates.TableTree(tree)
 }
 
 // Generate the tree of the database tables
-func generateTableTree(url string) (map[string][]model.Column, error) {
-	conn, err := sql.Open("postgres", url)
+func generateTableTree(url, driver string) (map[string][]model.Column, error) {
+	conn, err := sql.Open(driver, url)
 	if err != nil {
 		return map[string][]model.Column{}, err
 	}
 	defer conn.Close()
 
-	tree, err := tableList(conn)
+	tree, err := tableList(conn, driver)
 	if err != nil {
 		return map[string][]model.Column{}, err
 	}
 
-	if err := fillColumns(conn, tree); err != nil {
+	if err := fillColumns(conn, driver, tree); err != nil {
 		return map[string][]model.Column{}, err
 	}
 
@@ -60,8 +66,17 @@ func generateTableTree(url string) (map[string][]model.Column, error) {
 
 // Return a map with the keys being the table names and the values
 // being blank which can be later used to store the columns.
-func tableList(conn *sql.DB) (map[string][]model.Column, error) {
-	rows, err := conn.Query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';")
+func tableList(conn *sql.DB, driver string) (map[string][]model.Column, error) {
+	var q string
+	switch driver {
+	case "postgres":
+		q = query.GET_TABLE_LIST_PSQL
+	case "mysql", "mariadb":
+		q = query.GET_TABLE_LIST_MYSQL
+	default:
+		return map[string][]model.Column{}, errors.New("Unsupported driver")
+	}
+	rows, err := conn.Query(q)
 	if err != nil {
 		return map[string][]model.Column{}, err
 	}
@@ -81,20 +96,38 @@ func tableList(conn *sql.DB) (map[string][]model.Column, error) {
 
 // Fill the columns of the tables in the tree using the keys found
 // in the tableList function.
-//
-// For now, the only data stored is the
-// column name, but in the future this could be expanded to store
-// datatype, constraints, primary keys, relationship, etc.
-func fillColumns(conn *sql.DB, tree map[string][]model.Column) error {
+func fillColumns(conn *sql.DB, driver string, tree map[string][]model.Column) error {
+	// Pick the correct array of queries to use based on the driver
+	var qs [4]string
+	switch driver {
+	case "postgres":
+		qs = [4]string{
+			query.GET_TABLE_PK_PSQL,
+			query.GET_TABLE_FKS_PSQL,
+			query.GET_TABLE_RESTRAINS_PSQL,
+			query.GET_TABLE_UNIQUE_COLS_PSQL,
+		}
+	case "mysql", "mariadb":
+		qs = [4]string{
+			query.GET_TABLE_PK_MYSQL,
+			query.GET_TABLE_FKS_MYSQL,
+			query.GET_TABLE_RESTRAINS_MYSQL,
+			query.GET_TABLE_UNIQUE_COLS_MYSQL,
+		}
+	default:
+		return errors.New("Unsupported driver")
+	}
+
 	var pkey string
 	var fkeys []model.ForeignKey
 	for table := range tree {
-		unique, err := getUniqueColumns(conn, table)
+		unique, err := getUniqueColumns(conn, table, qs[3])
 		if err != nil {
 			return err
 		}
 
-		pk, err := conn.Query(fmt.Sprintf("SELECT kcu.column_name FROM information_schema.table_constraints tc JOIN  information_schema.key_column_usage kcu  ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_name = '%s';", table))
+		// Get the primary key of the table
+		pk, err := conn.Query(fmt.Sprintf(qs[0], table))
 		if err != nil {
 			return err
 		}
@@ -105,7 +138,8 @@ func fillColumns(conn *sql.DB, tree map[string][]model.Column) error {
 			}
 		}
 
-		fk, err := conn.Query(fmt.Sprintf("SELECT tc.table_schema, tc.table_name, kcu.column_name, ccu.table_schema AS foreign_table_schema, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name AND ccu.table_schema = tc.table_schema WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = '%s';", table))
+		// Get the foreign keys of the table
+		fk, err := conn.Query(fmt.Sprintf(qs[1], table))
 		if err != nil {
 			return err
 		}
@@ -118,7 +152,10 @@ func fillColumns(conn *sql.DB, tree map[string][]model.Column) error {
 			fkeys = append(fkeys, fkey)
 		}
 
-		rows, err := conn.Query(fmt.Sprintf("SELECT c.column_name, c.is_nullable, c.data_type, c.character_maximum_length, t.typname AS enum_type FROM information_schema.columns c JOIN pg_type t ON c.udt_name = t.typname WHERE c.table_name = '%s';", table))
+		fmt.Printf("%s: %+v\n", table, fkeys)
+
+		// Get the restraints of the table
+		rows, err := conn.Query(fmt.Sprintf(qs[2], table))
 		if err != nil {
 			return err
 		}
@@ -127,13 +164,13 @@ func fillColumns(conn *sql.DB, tree map[string][]model.Column) error {
 		for rows.Next() {
 			var (
 				column   model.Column
-				enumType string
+				enumType sql.NullString
 			)
 			if err := rows.Scan(&column.Name, &column.Nullable, &column.Type, &column.MaxLength, &enumType); err != nil {
 				return err
 			}
 			if column.Type == "USER-DEFINED" {
-				column.Type = enumType
+				column.Type = enumType.String
 			}
 			if column.Name == pkey {
 				column.PrimaryKey = true
@@ -160,9 +197,9 @@ func fillColumns(conn *sql.DB, tree map[string][]model.Column) error {
 }
 
 // Returns a list of the unique columns in a table
-func getUniqueColumns(conn *sql.DB, table string) ([]string, error) {
+func getUniqueColumns(conn *sql.DB, table string, query string) ([]string, error) {
 	var cols []string
-	rows, err := conn.Query(fmt.Sprintf("SELECT kcu.column_name FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema WHERE tc.constraint_type = 'UNIQUE' AND kcu.table_name = '%s';", table))
+	rows, err := conn.Query(fmt.Sprintf(query, table))
 	if err != nil {
 		return []string{}, err
 	}
@@ -185,22 +222,22 @@ func EnumTree(c *gin.Context) string {
 	connections_bytes, ok := session.Get("connections").([]byte)
 	current, ok := session.Get("current").(string)
 	if !ok {
-		fmt.Println("No connections found")
-		return ""
+		return templates.EnumTreeError(errors.New("No connections found"))
 	}
 
-	var connections map[string]string
+	var connections map[string][2]string
 	if err := json.Unmarshal(connections_bytes, &connections); err != nil {
-		fmt.Println(err)
-		return ""
+		return templates.EnumTreeError(err)
 	}
 
-	url := connections[current]
+	var (
+		url    string = connections[current][0]
+		driver string = connections[current][1]
+	)
 
-	enums, err := genereteEnumTree(url)
+	enums, err := genereteEnumTree(url, driver)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		return templates.EnumTreeError(err)
 	}
 
 	return templates.EnumTree(enums)
@@ -208,14 +245,14 @@ func EnumTree(c *gin.Context) string {
 
 // Generate the tree of the database enums and their values from a
 // provided connection URL.
-func genereteEnumTree(url string) (map[string][]string, error) {
-	conn, err := sql.Open("postgres", url)
+func genereteEnumTree(url, driver string) (map[string][]string, error) {
+	conn, err := sql.Open(driver, url)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Close()
 
-	enums, err := enumList(conn)
+	enums, err := enumList(conn, driver)
 	if err != nil {
 		return nil, err
 	}
@@ -225,8 +262,17 @@ func genereteEnumTree(url string) (map[string][]string, error) {
 
 // Get a list/map of all the enums in the database.
 // The key is the name of the enum and the value is a slice of the enum values.
-func enumList(conn *sql.DB) (map[string][]string, error) {
-	rows, err := conn.Query("SELECT t.typname AS enum_name, e.enumlabel AS enum_value FROM pg_type t JOIN pg_enum e ON t.oid = e.enumtypid JOIN pg_namespace n ON n.oid = t.typnamespace WHERE t.typcategory = 'E' AND n.nspname NOT IN ('pg_catalog', 'information_schema')  ORDER BY t.typname, e.enumsortorder;")
+func enumList(conn *sql.DB, driver string) (map[string][]string, error) {
+	var q string
+	switch driver {
+	case "postgres":
+		q = query.GET_ENUM_LIST_PSQL
+	case "mysql", "mariadb":
+		return map[string][]string{}, errors.New(fmt.Sprintf("%s does not support enum tree display.", driver))
+	default:
+		return map[string][]string{}, errors.New("Unsupported driver")
+	}
+	rows, err := conn.Query(q)
 	if err != nil {
 		return map[string][]string{}, err
 	}

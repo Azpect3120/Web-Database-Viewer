@@ -18,7 +18,7 @@ const MANUAL_QUERY string = `
 		</div>
 		<textarea id="sql" name="sql" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
 		<p id="spinner" class="text-gray-700 text-sm px-1 py-2 htmx-indicator hidden"> Query running... </p>
-		<p id="query-error" hx-swap-oob="outerHTML" class="text-red-500 py-2 text-sm hidden"></p>
+		<p id="query-error" class="text-red-500 py-2 text-sm hidden"></p>
 	</div>
 `
 
@@ -36,7 +36,7 @@ const AUTO_QUERY string = `
 		</div>
 		<textarea id="sql" name="sql" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" hx-post="/v1/api/query" hx-trigger="input delay:500ms" hx-swap="outerHTML" hx-target="#query-results" hx-indicator="#spinner"></textarea>
 		<p id="spinner" class="text-gray-700 text-sm px-1 py-2 htmx-indicator hidden"> Query running... </p>
-		<p id="query-error" hx-swap-oob="outerHTML" class="text-red-500 py-2 text-sm hidden"></p>
+		<p id="query-error" class="text-red-500 py-2 text-sm hidden"></p>
 	</div>
 `
 

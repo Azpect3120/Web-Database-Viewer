@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 
@@ -22,10 +23,12 @@ const CONNECTION_FAILURE string = `
 
 // Test a connection to a database
 func TestConnectionURL(c *gin.Context) {
-	var driver string
+	var driver string = c.PostForm("db-driver")
 	switch c.PostForm("db-driver") {
-	case "postgresql":
+	case "postgres":
 		driver = "postgres"
+	case "mysql", "mariadb":
+		driver = "mysql"
 	default:
 		c.String(200, fmt.Sprintf(CONNECTION_FAILURE, "Unsupported driver"))
 		return
@@ -35,7 +38,8 @@ func TestConnectionURL(c *gin.Context) {
 	conn, err := sql.Open(driver, c.PostForm("db-url"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(200, CONNECTION_FAILURE)
+		c.String(200, fmt.Sprintf(CONNECTION_FAILURE, err.Error()))
+		return
 	}
 
 	// Ping/test connection

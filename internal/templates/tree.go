@@ -98,7 +98,7 @@ func generateFields(table string, fields []model.Column) string {
 }
 
 // Return a list of the keys in a map, sorted alphabetically
-func getSortedKeys[T model.Column | string](m map[string][]T) []string {
+func getSortedKeys[T []model.Column | []string | string | [2]string](m map[string]T) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)

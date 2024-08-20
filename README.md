@@ -107,13 +107,13 @@ the full range of features.
 
 **Fully Supported Drivers:**
 - PostgreSQL
+- MySQL
+- MariaDB
 
 **Partially Supported Drivers:**
-- MySQL
 - SQLite
 - SQL Server
 - Oracle
-- MariaDB
 - DB2
 
 ## Contributing

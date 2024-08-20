@@ -31,7 +31,7 @@ func New(port string) *Server {
 
 	// Session configuration
 	gob.Register([]byte{})
-	gob.Register(map[string]string{})
+	gob.Register(map[string][2]string{})
 	store := cookie.NewStore([]byte("secret"))
 	store.Options(sessions.Options{
 		Path:     "/",

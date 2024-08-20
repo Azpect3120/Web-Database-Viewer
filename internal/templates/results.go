@@ -34,11 +34,11 @@ const query_error_message string = `<p id="query-error" hx-swap-oob="outerHTML" 
 const query_error_message_blank string = `<p id="query-error" hx-swap-oob="outerHTML" class="text-red-500 py-2 text-sm hidden"></p>`
 
 func ErrorQueryResults(e error) string {
-	return result_list_open + result_list_close + fmt.Sprintf(query_error_message, e.Error())
+	return fmt.Sprintf(query_error_message, e.Error()) + result_list_open + result_list_close
 }
 
 func ConcatResults(items []string) string {
-	var html string = result_list_open
+	var html string = query_error_message_blank + result_list_open
 
 	for _, h := range items {
 		html += h
@@ -48,7 +48,7 @@ func ConcatResults(items []string) string {
 }
 
 func QueryResult(cols []string, rows []map[string]interface{}) string {
-	head := generateHead(cols)
+	var head string = generateHead(cols)
 
 	body := table_body_open
 	for _, row := range rows {
@@ -57,12 +57,12 @@ func QueryResult(cols []string, rows []map[string]interface{}) string {
 
 	body += table_body_close
 
-	return fmt.Sprintf(result_item, table_open+head+body+table_close+query_error_message_blank)
+	return fmt.Sprintf(result_item, table_open+head+body+table_close)
 }
 
 // Generate the tables head row
 func generateHead(cols []string) string {
-	html := table_head_open
+	var html string = table_head_open
 
 	for _, col := range cols {
 		html += fmt.Sprintf(table_head_row, col)
@@ -72,7 +72,7 @@ func generateHead(cols []string) string {
 }
 
 func generateRow(cols []string, data map[string]interface{}) string {
-	row := "<tr>"
+	var row string = "<tr>"
 
 	for _, col := range cols {
 		row += fmt.Sprintf(table_body_row, data[col])
