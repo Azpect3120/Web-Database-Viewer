@@ -152,8 +152,6 @@ func fillColumns(conn *sql.DB, driver string, tree map[string][]model.Column) er
 			fkeys = append(fkeys, fkey)
 		}
 
-		fmt.Printf("%s: %+v\n", table, fkeys)
-
 		// Get the restraints of the table
 		rows, err := conn.Query(fmt.Sprintf(qs[2], table))
 		if err != nil {

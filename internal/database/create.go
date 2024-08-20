@@ -42,7 +42,6 @@ func CreateConnection(c *gin.Context) {
 	for true {
 		var dupe bool = false
 		for n := range connections {
-			fmt.Printf("is %s == %s\n", n, name)
 			if n == name {
 				name = fmt.Sprintf("%s (copy)", name)
 				dupe = true
