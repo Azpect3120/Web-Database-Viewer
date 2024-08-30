@@ -109,9 +109,9 @@ the full range of features.
 - PostgreSQL
 - MySQL
 - MariaDB
+- SQLite3
 
 **Partially Supported Drivers:**
-- SQLite
 - SQL Server
 - Oracle
 - DB2

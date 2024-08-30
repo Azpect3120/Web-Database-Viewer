@@ -41,6 +41,8 @@ function GenerateURL(data) {
     data.connectionURL.value = `postgres://${data.username.value || "<username>"}:${data.password.value || "<password>"}@${data.host.value || "<host>"}:${data.port.value || "<port>"}/${data.database.value || "<database>"}?sslmode=disable`;
   } else if (driver == "mysql" || driver == "mariadb") {
     data.connectionURL.value = `${data.username.value || "<username>"}:${data.password.value || "<password>"}@tcp(${data.host.value || "<host>"}:${data.port.value || "<port>"})/${data.database.value || "<database>"}`;
+  } else if (driver == "sqlite3") {
+    data.connectionURL.value = `${data.database.value || "<database>"}`;
   }
 }
 
@@ -53,6 +55,9 @@ function ParseURL (data) {
     case "mysql":
     case "mariadb":
       regex = /^(?<username>[^:]+):(?<password>[^@]+)@tcp\((?<host>[^:]+):(?<port>[0-9]+)\)\/(?<database>[^\?]+)(\?(?<params>.*))?$/;
+      break;
+    case "sqlite3":
+      regex = /^(?<database>)/;
       break;
     default: 
       console.log("Parsing URL failed: Unsupported driver.")
@@ -78,6 +83,10 @@ function ParseURL (data) {
         data.port.value = port;
         data.password.value = password;
         data.username.value = username;
+        data.database.value = database;
+        break;
+      case "sqlite":
+        var { database } = match.groups;
         data.database.value = database;
         break;
       default:

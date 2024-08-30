@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const CONNECTION_SUCCESS string = `
@@ -29,6 +30,8 @@ func TestConnectionURL(c *gin.Context) {
 		driver = "postgres"
 	case "mysql", "mariadb":
 		driver = "mysql"
+	case "sqlite3":
+		driver = "sqlite3"
 	default:
 		c.String(200, fmt.Sprintf(CONNECTION_FAILURE, "Unsupported driver"))
 		return
@@ -46,6 +49,8 @@ func TestConnectionURL(c *gin.Context) {
 	if err := conn.Ping(); err != nil {
 		c.String(200, fmt.Sprintf(CONNECTION_FAILURE, err.Error()))
 		return
+	} else {
+		fmt.Printf("%+v\n", conn.Driver())
 	}
 
 	c.String(200, CONNECTION_SUCCESS)

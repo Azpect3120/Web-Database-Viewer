@@ -11,7 +11,9 @@ import (
 	"github.com/Azpect3120/Web-Database-Viewer/internal/templates"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Return an HTML string with the contents of the database tables
@@ -73,9 +75,12 @@ func tableList(conn *sql.DB, driver string) (map[string][]model.Column, error) {
 		q = query.GET_TABLE_LIST_PSQL
 	case "mysql", "mariadb":
 		q = query.GET_TABLE_LIST_MYSQL
+	case "sqlite3":
+		q = query.GET_TABLE_LIST_SQLITE
 	default:
-		return map[string][]model.Column{}, errors.New("Unsupported driver")
+		return map[string][]model.Column{}, errors.New("Table List: Unsupported driver")
 	}
+
 	rows, err := conn.Query(q)
 	if err != nil {
 		return map[string][]model.Column{}, err
@@ -114,8 +119,15 @@ func fillColumns(conn *sql.DB, driver string, tree map[string][]model.Column) er
 			query.GET_TABLE_RESTRAINS_MYSQL,
 			query.GET_TABLE_UNIQUE_COLS_MYSQL,
 		}
+	case "sqlite3":
+		qs = [4]string{
+			query.GET_TABLE_PK_SQLITE,
+			query.GET_TABLE_FKS_SQLITE,
+			query.GET_TABLE_RESTRAINS_SQLITE,
+			query.GET_TABLE_UNIQUE_COLS_SQLITE,
+		}
 	default:
-		return errors.New("Unsupported driver")
+		return errors.New("Table Columns: Unsupported driver")
 	}
 
 	var pkey string
@@ -265,10 +277,10 @@ func enumList(conn *sql.DB, driver string) (map[string][]string, error) {
 	switch driver {
 	case "postgres":
 		q = query.GET_ENUM_LIST_PSQL
-	case "mysql", "mariadb":
+	case "mysql", "mariadb", "sqlite3":
 		return map[string][]string{}, errors.New(fmt.Sprintf("%s does not support enum tree display.", driver))
 	default:
-		return map[string][]string{}, errors.New("Unsupported driver")
+		return map[string][]string{}, errors.New("Enum List: Unsupported driver")
 	}
 	rows, err := conn.Query(q)
 	if err != nil {
